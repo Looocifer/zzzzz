@@ -1,3 +1,6 @@
+DAY 1
+----------------------------------------------------------------------------------------------------------------------------------------
+
 $PSVersionTable
 $env:PSModulePath -Split ";"
 
@@ -106,5 +109,18 @@ $var = Get-Content <File>
 $var = Get-Content <File> | Get-Service | where StartType -eq manual
 $var[0] #Picking Up First Entry from the Variable
 
-#Specifics (Get-Content will not consider comma as a delimiter)
+#Specifics (Get-Content will not consider comma as a delimiter; default is \n)
 Import-CSV
+
+$gc= Get-Content <file>
+$gc[0]
+$gc= Get-Content <file> -Delimiter " " #Still doesn't treat dataset as a table, the break is translated as a new line.
+
+$csv= Import-Csv <file>
+$csv[0]
+$csv= Import-Csv <file> -Delimiter ":" #Explicitly define Delimiter
+
+#Sorting
+Get-Service | Select-Object StartType, Name, Status, DisplayName -First 5 #Reminder : Know Props via Get-Member
+Get-Process | Sort CPU -Descending | Select -First 5
+
