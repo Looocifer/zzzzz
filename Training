@@ -166,3 +166,58 @@ Ideal one,
 Get-Process | Where-Object {$_.CPU -gt 100}
 Get-Process | Where-Object {$_.CPU -gt 100 -and $_.NonpagedSystemMemorySize -gt 10kb} #By default values are in Bytes
 
+PS C:\Windows\system32> ((gci -File).length)/1024
+4.009765625
+PS C:\Windows\system32> ((gci -File).length)/1KB
+4.009765625
+PS C:\Windows\system32> ((gci -File).length)/1024/1024
+0.00391578674316406
+PS C:\Windows\system32> ((gci -File).length)/1MB
+0.00391578674316406
+
+#ForEach
+Get-Service s* | Where Status -eq "Running" | ForEach {Write-Host "Service" $_.DisplayName "is running"}
+
+
+#Correct Logically
+Get-Process | Sort CPU -Descending | Select -First 5
+#Incorrect Logically
+Get-Process | Select -First 5 | Sort CPU -Descending
+
+##Output
+Out-File (Sends only whatever is on screen)
+Export-CSV (Sends all properties regardless of what is printed on screen; similar to Select *. Also lists Object Type Information. Use -NoTypeInformation or -nti to avoid that.)
+Export-Clixml
+
+Get-Process | Select -First 5 | Sort CPU -Descending | Export-Csv .\test.csv -NoTypeInformation
+Get-Process | Select -First 5 | Sort CPU -Descending | Out-File .\test.txt
+
+Get-Command -Verb Out
+Cmdlet          Out-Default                                        3.0.0.0    Microsoft.PowerShell.Core                                                                              
+Cmdlet          Out-File                                           3.1.0.0    Microsoft.PowerShell.Utility                                                                           
+Cmdlet          Out-GridView                                       3.1.0.0    Microsoft.PowerShell.Utility                                                                           
+Cmdlet          Out-Host                                           3.0.0.0    Microsoft.PowerShell.Core                                                                              
+Cmdlet          Out-Null                                           3.0.0.0    Microsoft.PowerShell.Core                                                                              
+Cmdlet          Out-Printer                                        3.1.0.0    Microsoft.PowerShell.Utility                                                                           
+Cmdlet          Out-String                                         3.1.0.0    Microsoft.PowerShell.Utility 
+
+Out-Null
+
+-NoClobber basically doesn't fill in duplicate data while appending.
+
+Get-Process | Select -First 5 | Sort CPU -Descending | Out-GridView -PassThru
+#PassThru provides OK & Cancel options to be printed back to screen based on whatever the end user has selected.
+
+Out -Default (is default)
+    -File
+    -Gridview
+    -Host
+    -Null (Use this to destroy value)
+    -String (Cannot be converted back into an Object)
+    -Printer
+    
+#Formatting (List/Table)
+#Instead of Select * | FL, FL * can be used.
+
+FL or FT should always be the last part of the pipeline and only to view on the screen.
+Reason being these two convert data into strings i.e. without object property.
