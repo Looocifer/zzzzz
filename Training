@@ -235,5 +235,123 @@ Get-Process | Sort-Object -Property BasePriority | Format-Table -GroupBy BasePri
 Get-Process | Sort-Object -Property BasePriority -Descending | Format-Table -GroupBy BasePriority -Wrap -AutoSize #With DESC
 
 Get-Process | Sort-Object -Property Status | Format-Table -GroupBy Status -Wrap -AutoSize #Useful
+Get-ACL Test.txt -Audit | Export-Clixml Text.xml #Useful
+Example Output,
+----------------------------------------------------------------------------------------------------------------------------------------
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Security.AccessControl.FileSecurity</T>
+      <T>System.Security.AccessControl.FileSystemSecurity</T>
+      <T>System.Security.AccessControl.NativeObjectSecurity</T>
+      <T>System.Security.AccessControl.CommonObjectSecurity</T>
+      <T>System.Security.AccessControl.ObjectSecurity</T>
+      <T>System.Object</T>
+    </TN>
+    <ToString>System.Security.AccessControl.FileSecurity</ToString>
+    <Props>
+      <S N="AccessRightType">System.Security.AccessControl.FileSystemRights</S>
+      <S N="AccessRuleType">System.Security.AccessControl.FileSystemAccessRule</S>
+      <S N="AuditRuleType">System.Security.AccessControl.FileSystemAuditRule</S>
+      <B N="AreAccessRulesProtected">false</B>
+      <B N="AreAuditRulesProtected">false</B>
+      <B N="AreAccessRulesCanonical">true</B>
+      <B N="AreAuditRulesCanonical">true</B>
+    </Props>
+    <MS>
+      <S N="PSPath">Microsoft.PowerShell.Core\FileSystem::C:\Users\prudentia\Desktop\Test.txt</S>
+      <S N="PSParentPath">Microsoft.PowerShell.Core\FileSystem::C:\Users\prudentia\Desktop</S>
+      <S N="PSChildName">Test.txt</S>
+      <Obj N="PSDrive" RefId="1">
+        <TN RefId="1">
+          <T>System.Management.Automation.PSDriveInfo</T>
+          <T>System.Object</T>
+        </TN>
+        <ToString>C</ToString>
+        <Props>
+          <S N="CurrentLocation">Users\prudentia\Desktop</S>
+          <S N="Name">C</S>
+          <S N="Provider">Microsoft.PowerShell.Core\FileSystem</S>
+          <S N="Root">C:\</S>
+          <S N="Description"></S>
+          <Nil N="MaximumSize" />
+          <Obj N="Credential" RefId="2">
+            <TN RefId="2">
+              <T>System.Management.Automation.PSCredential</T>
+              <T>System.Object</T>
+            </TN>
+            <ToString>System.Management.Automation.PSCredential</ToString>
+            <Props>
+              <Nil N="UserName" />
+              <Nil N="Password" />
+            </Props>
+          </Obj>
+          <Nil N="DisplayRoot" />
+        </Props>
+        <MS>
+          <U64 N="Used">36568629248</U64>
+          <U64 N="Free">463012818944</U64>
+        </MS>
+      </Obj>
+      <Obj N="PSProvider" RefId="3">
+        <TN RefId="3">
+          <T>System.Management.Automation.ProviderInfo</T>
+          <T>System.Object</T>
+        </TN>
+        <ToString>Microsoft.PowerShell.Core\FileSystem</ToString>
+        <Props>
+          <S N="ImplementingType">Microsoft.PowerShell.Commands.FileSystemProvider</S>
+          <S N="HelpFile">System.Management.Automation.dll-Help.xml</S>
+          <S N="Name">FileSystem</S>
+          <S N="PSSnapIn">Microsoft.PowerShell.Core</S>
+          <S N="ModuleName">Microsoft.PowerShell.Core</S>
+          <Nil N="Module" />
+          <S N="Description"></S>
+          <S N="Capabilities">Filter, ShouldProcess, Credentials</S>
+          <S N="Home">C:\Users\prudentia</S>
+          <Obj N="Drives" RefId="4">
+            <TN RefId="4">
+              <T>System.Collections.ObjectModel.Collection`1[[System.Management.Automation.PSDriveInfo, System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]</T>
+              <T>System.Object</T>
+            </TN>
+            <LST>
+              <Ref RefId="1" />
+            </LST>
+          </Obj>
+        </Props>
+      </Obj>
+      <Obj N="Audit" RefId="5">
+        <TN RefId="5">
+          <T>System.Security.AccessControl.AuthorizationRuleCollection</T>
+          <T>System.Collections.ReadOnlyCollectionBase</T>
+          <T>System.Object</T>
+        </TN>
+        <IE />
+        <Props>
+          <I32 N="Count">0</I32>
+          <S N="SyncRoot">System.Object</S>
+          <B N="IsSynchronized">false</B>
+        </Props>
+      </Obj>
+      <Nil N="CentralAccessPolicyId" />
+      <Nil N="CentralAccessPolicyName" />
+      <S N="Path">Microsoft.PowerShell.Core\FileSystem::C:\Users\prudentia\Desktop\Test.txt</S>
+      <S N="Owner">DESKTOP-NOMDDPJ\prudentia</S>
+      <S N="Group">DESKTOP-NOMDDPJ\None</S>
+      <Obj N="Access" RefId="6">
+        <TNRef RefId="5" />
+        <IE>
+          <S>System.Security.AccessControl.FileSystemAccessRule</S>
+          <S>System.Security.AccessControl.FileSystemAccessRule</S>
+          <S>System.Security.AccessControl.FileSystemAccessRule</S>
+        </IE>
+      </Obj>
+      <S N="Sddl">O:S-1-5-21-1304635577-3799697455-2161510296-1003G:S-1-5-21-1304635577-3799697455-2161510296-513D:(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;S-1-5-21-1304635577-3799697455-2161510296-1003)</S>
+      <S N="AccessToString">NT AUTHORITY\SYSTEM Allow  FullControl_x000A_BUILTIN\Administrators Allow  FullControl_x000A_DESKTOP-NOMDDPJ\prudentia Allow  FullControl</S>
+      <S N="AuditToString"></S>
+    </MS>
+  </Obj>
+</Objs>
+----------------------------------------------------------------------------------------------------------------------------------------
 
-
+-x-
