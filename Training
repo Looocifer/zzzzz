@@ -1,5 +1,6 @@
 DAY 1
 ----------------------------------------------------------------------------------------------------------------------------------------
+Backtick (`) used to continue one command into the next line.
 
 $PSVersionTable
 $env:PSModulePath -Split ";"
@@ -120,7 +121,48 @@ $csv= Import-Csv <file>
 $csv[0]
 $csv= Import-Csv <file> -Delimiter ":" #Explicitly define Delimiter
 
-#Sorting
+## Functions/Processes for Input i.e. Verb-Noun cmdlets. ##
+(Select, Sort, Group, Measure, Compare, Where, Foreach, etc)
+
 Get-Service | Select-Object StartType, Name, Status, DisplayName -First 5 #Reminder : Know Props via Get-Member
 Get-Process | Sort CPU -Descending | Select -First 5
+Get-EventLog -LogName Application | Select -Last 5
+
+#Grouping
+Get-EventLog -LogName Application | Group-Object EntryType
+Get-Service | Group Status
+
+#Check Difference in Output by running the following
+Get-EventLog -LogName Application | Group-Object EntryType | Where Name -eq "error" | Select -ExpandProperty Group | Select -First 5
+Get-EventLog -LogName Application | Group-Object EntryType | Where Name -eq "error"  | Select -First 5
+
+#Newest (Only in some cmdlets)
+Get-EventLog -LogName Application -EntryType Error -Newest 10
+
+#Measure
+Get-ChildItem -Path . -File | Measure -Property Length -Sum -Average -Maximum -Minimum
+Get-Process | Measure -Property CPU -Sum -Average -Maximum -Minimum
+
+#Compare <= == =>
+$Proc1 = Get-Process
+start notepad.exe
+calc
+$Proc2 = Get-Process
+Compare $Proc1 $Proc2
+Compare $Proc1 $Proc2 -IncludeEqual -ExcludeDifferent
+
+#Actual
+Compare-Object -ReferenceObject $Proc1 -DifferenceObject $Proc2
+
+#Where
+Get-EventLog Application -Newest 10 | Where-Object {$_.Source -eq "esent" -and $_.TimeGenerated -gt (Get-Date).AddDays(-1)}
+#$_ is Pipeline Variable (i.e. acts on output objects of the current command)
+
+** Question Mark (?) is Alias for Where or Where-Object
+** Percentage (%) is Alias for ForEach or ForEach-Object
+
+Get-Process | Where CPU -gt 100 (Won't work till PS3)
+Ideal one,
+Get-Process | Where-Object {$_.CPU -gt 100}
+Get-Process | Where-Object {$_.CPU -gt 100 -and $_.NonpagedSystemMemorySize -gt 10kb} #By default values are in Bytes
 
