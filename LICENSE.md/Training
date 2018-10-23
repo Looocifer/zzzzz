@@ -88,3 +88,13 @@ Get-ChildItem -File
 Get-ChildItem -Directory
 
 Get-ChildItem -Path .. -File | where LastWriteTime -lt (Get-Date).AddDays(-30) | Remove-Item -WhatIf
+
+Get-ChildItem | Get-Member #Lists for ALL Object Types - In this case for Directories as well as File
+
+"spooler", "bits" | Get-Service
+Get-Content <File> | Get-Service | where StartType -eq manual
+Get-Content <File> | Get-Service
+
+$var = Get-Content <File>
+$var = Get-Content <File> | Get-Service | where StartType -eq manual
+$var[0] #Picking Up First Entry from the Varibale
