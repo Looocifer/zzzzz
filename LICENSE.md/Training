@@ -4,17 +4,40 @@ $env:PSModulePath -Split ";"
 #psm1 file extension is for Modules (Container for Commands)
 
 Get-Command -Noun *net*
-Get-Command -Vedrb *get*
+Get-Command -Verb *get*
 
 Get-Module
 
 Get-Help Get-ChildItem -ShowWindow
 Get-Help Get-NetIPConfiguration -Parameter All
-Get-Help Get-ChildItem -Online                          #Online Technet Article
+Get-Help Get-ChildItem -Online #Online Technet Article
 
 Get-Command -Noun Alias
-Get-Command New-Alias -Syntax                           # [] - Optional <> - Mandate
+Get-Command *Alias
+Get-Command New-Alias -Syntax
 Get-Command Get-ChildItem -Syntax
 
-New-Alias Child2 Get-ChildItem
+New-Alias Child2 Get-ChildItem 
 Get-Alias | findstr Child2
+
+$profile
+$profile | Select * #All Profiles (ISE or PS : C:\Users\prudentia\Documents\WindowsPowerShell\profile.ps1)
+
+#Write-Host "User: $env:USERNAME"
+#Use Transcript to record commands being run.
+
+Set-ExecutionPolicy Unrestricted -Scope LocalMachine
+
+Get-Command *transcript
+Start-Transcript -Path $home\Desktop\TranscriptTest.txt -Append
+Stop-Transcript
+
+#Control Mechs : WhatIf & Confirm
+Stop-Process -name c* -WhatIf
+Stop-Process -name c* -WhatIf:$true
+Stop-Process -name c* -Confirm #Confirm Manually For Each Process
+
+$ConfirmPreference
+
+#For running in the background
+Restart-Computer Machine1 -Confirm:$false
