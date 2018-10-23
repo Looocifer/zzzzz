@@ -1,4 +1,4 @@
-DAY 1
+DAY 1 (Modules 2 > 6 > 3 > 7)
 ----------------------------------------------------------------------------------------------------------------------------------------
 Backtick (`) used to continue one command into the next line.
 
@@ -15,6 +15,8 @@ Get-Module
 Get-Help Get-ChildItem -ShowWindow
 Get-Help Get-NetIPConfiguration -Parameter All
 Get-Help Get-ChildItem -Online #Online Technet Article
+
+Get-Help Sort-Object -Parameter Descending #Describes DESC function
 
 Get-Command -Noun Alias
 Get-Command *Alias
@@ -60,6 +62,9 @@ Save-Help -Verbose -Force -DestinationPath C:\TheHelpFiles #Offline Dump of Exis
 Update-Help -Verbose #Delay between two update calls is 24 hrs.
 Update-Help -Verbose -Force
 
+#GREP
+ipconfig /all | Select-String -Pattern ‘Ipv4 Address’
+
 Get-Process -Id $pid -Module
 Get-Process -Id $pid -Verbose
 #F7
@@ -87,7 +92,6 @@ $svc.StartType
 #List All Props & Meths
 $svc | Get-Member
 
- 
 (Get-Date).Date | Get-Member
 (Get-Date).Date.Month | Get-Member
  
@@ -127,6 +131,9 @@ $csv= Import-Csv <file> -Delimiter ":" #Explicitly define Delimiter
 Get-Service | Select-Object StartType, Name, Status, DisplayName -First 5 #Reminder : Know Props via Get-Member
 Get-Process | Sort CPU -Descending | Select -First 5
 Get-EventLog -LogName Application | Select -Last 5
+
+#Logical Disk
+Get-Volume | Sort-Object –Property SizeRemaining
 
 #Grouping
 Get-EventLog -LogName Application | Group-Object EntryType
@@ -178,6 +185,8 @@ PS C:\Windows\system32> ((gci -File).length)/1MB
 #ForEach
 Get-Service s* | Where Status -eq "Running" | ForEach {Write-Host "Service" $_.DisplayName "is running"}
 
+Get-SmbShare | Sort-Object –Property Description # CMD : net share
+Get-Process | Select-Object -Unique #Useful
 
 #Correct Logically
 Get-Process | Sort CPU -Descending | Select -First 5
@@ -208,6 +217,7 @@ Out-Null
 Get-Process | Select -First 5 | Sort CPU -Descending | Out-GridView -PassThru
 #PassThru provides OK & Cancel options to be printed back to screen based on whatever the end user has selected.
 
+----------------------------------------------------------------------------------------------------------------------------------------
 Export -Csv
        -Clixml
 
@@ -218,7 +228,12 @@ Out    -Default (is default)
        -Null (Use this to destroy value)
        -String (Cannot be converted back into an Object)
        -Printer
-    
+       
+Format -Table
+       -List
+       -Wide
+----------------------------------------------------------------------------------------------------------------------------------------
+
 #Formatting (List/Table)
 #Instead of Select * | FL, FL * can be used.
 
