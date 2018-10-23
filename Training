@@ -208,16 +208,32 @@ Out-Null
 Get-Process | Select -First 5 | Sort CPU -Descending | Out-GridView -PassThru
 #PassThru provides OK & Cancel options to be printed back to screen based on whatever the end user has selected.
 
-Out -Default (is default)
-    -File
-    -Gridview
-    -Host
-    -Null (Use this to destroy value)
-    -String (Cannot be converted back into an Object)
-    -Printer
+Export -Csv
+       -Clixml
+
+Out    -Default (is default)
+       -File
+       -Gridview
+       -Host
+       -Null (Use this to destroy value)
+       -String (Cannot be converted back into an Object)
+       -Printer
     
 #Formatting (List/Table)
 #Instead of Select * | FL, FL * can be used.
 
 FL or FT should always be the last part of the pipeline and only to view on the screen.
 Reason being these two convert data into strings i.e. without object property.
+
+#Wrap
+| FT -Wrap to remove the dot-dot-dots or Incomplete Output Data
+For Outputs where one Column has longer values (eg. Path), keep it to the right otherwise some of the 
+
+Get-Alias | Format-Wide -Autosize (Minimalistic)
+
+Get-Process | Sort-Object -Property BasePriority | Format-Table -GroupBy BasePriority -Wrap -AutoSize
+Get-Process | Sort-Object -Property BasePriority -Descending | Format-Table -GroupBy BasePriority -Wrap -AutoSize #With DESC
+
+Get-Process | Sort-Object -Property Status | Format-Table -GroupBy Status -Wrap -AutoSize #Useful
+
+
