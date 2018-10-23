@@ -237,7 +237,7 @@ Format -Table
 #Formatting (List/Table)
 #Instead of Select * | FL, FL * can be used.
 
-FL or FT should always be the last part of the pipeline and only to view on the screen.
+***** FL or FT should always be the last part of the pipeline and only to view on the screen.
 Reason being these two convert data into strings i.e. without object property.
 
 #Wrap
