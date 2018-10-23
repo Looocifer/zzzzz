@@ -32,7 +32,7 @@ Get-Command *transcript
 Start-Transcript -Path $home\Desktop\TranscriptTest.txt -Append
 Stop-Transcript
 
-#Control Mechs : WhatIf & Confirm
+#Control Mechs // Risk Mitigation : WhatIf & Confirm
 Stop-Process -name c* -WhatIf
 Stop-Process -name c* -WhatIf:$true
 Stop-Process -name c* -Confirm #Confirm Manually For Each Process
@@ -41,3 +41,50 @@ $ConfirmPreference
 
 #For running in the background
 Restart-Computer Machine1 -Confirm:$false
+
+Update-Help -Verbose -Force -SourcePath C:\PowerShell-Help
+?? - Get-Childitem $PSHome -Filter *helpinfo.xml -Recurse | Remove-Item Confirm:$false
+Get-Help Get-Process -Full
+Get-Help Get-NetAdapter -Examples
+Get-Help about_Updatable_Help
+Get-Help Save-Help -Examples
+ 
+Get-Process -Id $pid -Module
+Get-Process -Id $pid -Verbose
+#F7
+Get-History
+#GUI Fill & Exec
+Show-Command Get-Process 
+
+Show-Command Get-Process -PassThru -Outvariable result #Click OK on the Popup
+$result | Invoke-Expression
+
+Get-Process -Id $pid -Module
+
+$a=1
+$a.GetType()
+$svc = Get-Service Spooler
+$svc.GetType
+$svc.GetHashCode()
+
+$svc | select *
+$svc.RequiredServices
+(Get-Service Spooler).RequiredServices
+$svc.Start()
+$svc.StartType
+
+#List All Props & Meths
+$svc | Get-Member
+
+ 
+(Get-Date).Date | Get-Member
+(Get-Date).Date.Month | Get-Member
+ 
+(Get-Date).ToShortDateString()
+
+Get-Culture
+
+Get-ChildItem -File
+Get-ChildItem -Directory
+
+Get-ChildItem -Path .. -File | where LastWriteTime -lt (Get-Date).AddDays(-30) | Remove-Item -WhatIf
