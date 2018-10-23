@@ -1,0 +1,18 @@
+$PSVersionTable
+$env:PSModulePath -Split ";"
+
+#psm1 file extension is for Modules (Container for Commands)
+
+Get-Command -Noun *net*
+Get-Command -Vedrb *get*
+Get-Module
+Get-Help Get-ChildItem -ShowWindow
+Get-Help Get-NetIPConfiguration -Parameter All
+Get-Help Get-ChildItem -Online #Online Technet Article
+Get-Command -Noun Alias
+Get-Command New-Alias -Syntax
+Get-Command Get-ChildItem -Syntax
+
+New-Alias Child2 Get-ChildItem 
+Get-Alias | findstr Child2
+Child2
