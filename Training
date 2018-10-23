@@ -48,7 +48,14 @@ Get-Help Get-Process -Full
 Get-Help Get-NetAdapter -Examples
 Get-Help about_Updatable_Help
 Get-Help Save-Help -Examples
- 
+
+New-Item -Path C:\TheHelpFiles –ItemType Directory
+Get-Module -ListAvailable | Format-Table Name, HelpInfoURI
+Save-Help -Verbose -Force -DestinationPath C:\TheHelpFiles #Offline Dump of Existing Help Data
+
+Update-Help -Verbose #Delay between two update calls is 24 hrs.
+Update-Help -Verbose -Force
+
 Get-Process -Id $pid -Module
 Get-Process -Id $pid -Verbose
 #F7
@@ -56,7 +63,7 @@ Get-History
 #GUI Fill & Exec
 Show-Command Get-Process 
 
-Show-Command Get-Process -PassThru -Outvariable result #Click OK on the Popup
+Show-Command Get-Process -PassThru -Outvariable result #Click OK on the Popup; PassThru is key.
 $result | Invoke-Expression
 
 Get-Process -Id $pid -Module
@@ -98,3 +105,6 @@ Get-Content <File> | Get-Service
 $var = Get-Content <File>
 $var = Get-Content <File> | Get-Service | where StartType -eq manual
 $var[0] #Picking Up First Entry from the Variable
+
+#Specifics (Get-Content will not consider comma as a delimiter)
+Import-CSV
