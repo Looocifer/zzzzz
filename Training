@@ -42,6 +42,10 @@ Start-Transcript -Path $home\Desktop\TranscriptTest.txt -Append
 Stop-Transcript
 
 #Control Mechs // Risk Mitigation : WhatIf & Confirm
+
+dir Variable:\WhatIfPreference
+$WhatIfPreference=$true
+
 Stop-Process -name c* -WhatIf
 Stop-Process -name c* -WhatIf:$true
 Stop-Process -name c* -Confirm #Confirm Manually For Each Process
@@ -524,3 +528,6 @@ Wed 24 Oct 11:24
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 -x-
+
+Books,
+https://www.amazon.com/gp/product/1449320686/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1449320686&linkId=8c0e9c85fd23b219ca218c109af28045
