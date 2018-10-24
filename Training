@@ -489,6 +489,13 @@ Text-separated-by-dash
 "{1}{0,5}{2,-5}{0}{3}{0}{4}" -f "-","Text","separated","by","dash" #Alignment, Dash printed after 5 Spaces
 Text    -separated-by-dash
 
+#More Complex Dynamics
+"{0:ddd dd MMM hh:mm}"-f (Get-Date).AddDays(+1)
+Wed 24 Oct 11:24
+
+#List of Data Types (Using the -F format Operator)
+https://social.technet.microsoft.com/wiki/contents/articles/7855.powershell-using-the-f-format-operator.aspx
+
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------
