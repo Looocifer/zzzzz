@@ -4,6 +4,7 @@ aka.ms/premiereducation
 DAY 1 (Modules 2 > 6 > 3 > 7) Functions/Commands, Help System, Pipeline & Object Models
 ----------------------------------------------------------------------------------------------------------------------------------------
 Backtick (`) used to continue one command into the next line.
+Set-Location ~ > PWD changes to Current Profile Home
 
 $PSVersionTable
 $env:PSModulePath -Split ";"
@@ -377,6 +378,30 @@ Example Output,
 ----------------------------------------------------------------------------------------------------------------------------------------
 DAY 2 (Modules 4 > 8 > 12 > 11) - Functions/Commands, Operators, Variables & Data Types
 ----------------------------------------------------------------------------------------------------------------------------------------
+
+'This is a simple string' -match '^T\w+'
+'This is a simple string' -match '(^T\w+)(.+)'
+$Matches
+$Matches[0]
+
+9 –eq 9
+‘SErver’ –cgt ‘Server’
+(1,10,2,10 -eq 10).Count
+'xbox' –ieq 'XBOX'
+1,2,3,4,5,6,7,8,9,10 –Contains 3
+'Sales' –In 'Marketing','IT','Sales','Finance','HR'
+
+(Get-ChildItem C:\Windows).FullName
+(Get-Process | Select-Object -ExpandProperty processName) -contains 'lsass'
+( (Get-Acl C:\Windows).Access | Select-Object -ExpandProperty IdentityReference)
+(Get-HotFix | Select-Object -ExpandProperty HotfixID)
+(Get-WindowsOptionalFeature -Online | Select-Object -ExpandProperty FeatureName)
+
+1,2,3,4,5 -contains 2 -xor 5,6,7,8,9 -contains 8
+
+(Get-Date).IsDaylightSavingTime()
+-not (Get-Date).IsDaylightSavingTime()
+
 #Defining A Function
 
 Function Top-Process
@@ -520,11 +545,28 @@ Text    -separated-by-dash
 https://social.technet.microsoft.com/wiki/contents/articles/7855.powershell-using-the-f-format-operator.aspx
 
 #More Complex Dynamics
-"{0:ddd dd MMM hh:mm}"-f (Get-Date).AddDays(+1) #Excel Level
+"{0:ddd dd MMM hh:mm}"-f (Get-Date).AddDays(+1) #Excel Level Formatting
 Wed 24 Oct 11:24
 # $Date = "{0:ddd dd MMM hh:mm}"-f (Get-Date).AddDays(+1)
 
+# REMOTING (WinRM)
+Prereq : Enable-PSRemoting
+$Cred = Get-Credential
 
+$PSS = New-PSSession <hostname>
+Enter-PSSession $PSS -Credential $Cred
+$PSS.GetType()
+
+LOCAL VARIABLE ON REMOTE SESSION (Define Scope via Using)
+*****
+$SList = "Srv1", "Srv2", "Srv3"
+$num=5
+$SB = {
+Get-Service | Select -First $using:num
+}
+Invoke-Command $SList -ScriptBlock $SB
+
+** For Function Using:<Function Name>
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 -x-
