@@ -1,6 +1,11 @@
 aka.ms/premiereducation
+https://whatpixel.com/10-best-powershell-books/
+https://www.d.umn.edu/~gshute/softeng/object-oriented.html
 
 Get-Help about_ (General Topics)
+
+$_ or $psitem is Current Pipeline Object
+Boolean Values do not need an =$true as that is default query.
 
 DAY 1 (Modules 2 > 6 > 3 > 7) Functions/Commands, Help System, Pipeline & Object Models
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -574,8 +579,57 @@ Invoke-Command $SList -ScriptBlock $SB
 
 ** For Function Using:<Function Name>
 
+** STRUCTURING FUNCTIONS **
+
+Function test-func
+{
+begin{Write-Host "begin $_" -ForegroundColor Cyan} #Connect DB, prepare & pass creds
+process{Write-Host "process $_" -ForegroundColor Yellow}
+end{Write-Host "end $_" -ForegroundColor Red} #Clean up creds, memory, connections
+}
+
+Output,
+1..5 | test-func
+begin (cyan)
+process 1 (yellow
+process 2
+process 3
+process 4
+process 5
+end 5
+
+
+function My-Function
+{
+    Begin
+    {
+        Remove-Item .\Events.txt -ErrorAction SilentlyContinue
+        Write-Host "Genesis" -ForegroundColor Cyan
+    }
+    Process
+    {
+        $_.Message | Out-File -Filepath Events.txt
+    }
+    End
+    {
+        Write-Host "End" -ForegroundColor DarkRed
+        notepad.exe Events.txt
+    }
+}
+
+# Resultant Command
+Get-EventLog Application -Newest 5 | My-Function
+
+# Structuring FOREACH
+Get-Service |
+ Foreach-Object –begin {"Counting Services..." ; $count=0} `
+  –process {$count++} `
+  –end {“$count services were found” }
 ----------------------------------------------------------------------------------------------------------------------------------------
 -x-
+
+Get-WMIObject
+Get-CIMInstance (Win 8.1 onwards)
 
 Books,
 https://www.amazon.com/gp/product/1449320686/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1449320686&linkId=8c0e9c85fd23b219ca218c109af28045
