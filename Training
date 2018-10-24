@@ -1,4 +1,4 @@
-DAY 1 (Modules 2 > 6 > 3 > 7)
+DAY 1 (Modules 2 > 6 > 3 > 7) Functions/Commands, Help System, Pipeline & Object Models
 ----------------------------------------------------------------------------------------------------------------------------------------
 Backtick (`) used to continue one command into the next line.
 
@@ -368,8 +368,28 @@ Example Output,
   </Obj>
 </Objs>
 ----------------------------------------------------------------------------------------------------------------------------------------
-DAY 2
+DAY 2 (Modules 4 > 8 > 12 > 11) - Functions/Commands, Operators, Variables & Data Types
 ----------------------------------------------------------------------------------------------------------------------------------------
+#Defining A Function
+
+Function Top-Process
+{
+Param ([int]$num=5, $server=".")
+Get-Process -ComputerName $server | Sort CPU -Descending | Select -First $num
+}
+
+Top-Process -server . -num 8
+
+Handles  NPM(K)    PM(K)      WS(K) VM(M)   CPU(s)     Id ProcessName                                                                
+-------  ------    -----      ----- -----   ------     -- -----------                                                                
+    486      62   119492      84552 ...83   552.67   1936 MsMpEng                                                                    
+    852      75   254816     226500  1026   374.25   4468 powershell_ise                                                             
+    363      37    79204      93976 ...33   185.86   2176 chrome                                                                     
+   1079       0      252      26148    67   181.36      4 System                                                                     
+   1480      58    59292     109664 ...08   131.09    936 chrome                                                                     
+   1757      62    18864      46936 ...50   108.72   1104 svchost                                                                    
+    737      37    45608      58500 ...92    97.66    604 svchost                                                                    
+    261      22    42228      57320 ...25    75.91   3664 dwm   
 
 #Regular Expressions
 
@@ -489,12 +509,13 @@ Text-separated-by-dash
 "{1}{0,5}{2,-5}{0}{3}{0}{4}" -f "-","Text","separated","by","dash" #Alignment, Dash printed after 5 Spaces
 Text    -separated-by-dash
 
-#More Complex Dynamics
-"{0:ddd dd MMM hh:mm}"-f (Get-Date).AddDays(+1)
-Wed 24 Oct 11:24
-
-#List of Data Types (Using the -F format Operator)
+#Using the -F format Operator
 https://social.technet.microsoft.com/wiki/contents/articles/7855.powershell-using-the-f-format-operator.aspx
+
+#More Complex Dynamics
+"{0:ddd dd MMM hh:mm}"-f (Get-Date).AddDays(+1) #Excel Level
+Wed 24 Oct 11:24
+# $Date = "{0:ddd dd MMM hh:mm}"-f (Get-Date).AddDays(+1)
 
 
 
