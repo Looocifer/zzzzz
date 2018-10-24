@@ -368,5 +368,128 @@ Example Output,
   </Obj>
 </Objs>
 ----------------------------------------------------------------------------------------------------------------------------------------
+DAY 2
+----------------------------------------------------------------------------------------------------------------------------------------
 
+#Regular Expressions
+
+#Following 3 will do the same thing.
+$svcs= Get-Service
+Get-Service -Outvariable svcs
+New-Variable -Name svcs -Value (Get-Service)
+$svcs #To Verify
+
+Get-Help about_Regular_Expressions -ShowWindow
+
+# $? - If Value = True it means that the last command ran successfully. False means error.
+# Can be used as a loop trigger or through an If or while.
+
+$Error[0] > Shows last error.
+$MaximumErrorCount (Default is 256)
+2..7 = Range > 2 3 4 5 6 7
+3..9 = Range > 3 4 5 6 7 8 9
+
+(Get-Content .\Desktop\Scripts\demo\config.txt) -match "\d(2,3)[1-6]\.\d{3}"
+
+-ErrorAction SilentlyContinue // -ea sc (Default is Continue)
+-WarningAction
+"spooler" -clike "s*"
+"word" -notlike "w*"
+
+$ConfirmPreference > -Confirm
+
+Modues Saved : $env:PSModulePath -Split ";"
+`n is \n is Powershell however Split works for \n on `n.
+
+"remove spaces put commas" -Replace " ", ","
+"powerpoint" -Replace "point", "shell"
+
+$a = "abc", "def", "test"
+$a -Join " "
+
+{} - Script Block // Given a name it becomes a function.
+<Eg>
+
+Function Top-Process (can be named anything, Verb-Noun not hard & fast)
+{
+Get-Process | Sort CPU -Descending | Select -First 5
+}
+
+
+Function Top-Process (can be named anything, Verb-Noun not hard & fast)
+{
+Param ($num) *
+Get-Process | Sort CPU -Descending | Select -First $num
+}
+
+* Param ($num=5) to give a default value.
+#Params make it more reusable, more dynamic
+
+<Exec>
+Top-Process -num 8 (Shows top 8 CPU consuming processes)
+
+Multiple Params
+
+$a=1
+$a.GetType()
+$a="abc"
+$a.GetType()
+$a=[int]"10" to force integer basically same class of values as input. If we enter 10.8 it will only accept 10 instead of the [Double] Value 10.8
+[int]$a=10.8 to force Integer Only as Input.
+
+(Get-Date).GetType()
+[datetime]"10/10/2018" to force it into a DateTime Value #Topic : Weak Type vs Strong Type
+
+# Accept Value from a User
+$val = Read-Host "Enter a Value "
+
+Single Quote doesn't translate a variable i.e. a literal string.
+Double Quote (Expandable String) Examples
+
+
+"Selected Service in use is $svc.name" - Gives Object Type/Category
+"Selected Service in use is $($svc.name)" -Pass the wholething via $() to call for full value resolution.
+
+Multi Line 
+@' > '@
+@" > "@
+
+$string = @' or @"
+x
+y
+z
+$a
+a
+'@ or "@
+
+[csv]$csv = Get-Content .\File.csv #Sometimes works better than Import-CSV
+Datatypes are dependant on which .NET Assemblies are loaded into your session.
+
+#Test Values
+(Get-Date) -is [DateTime]
+(Get-Date) -isnot [DateTime]
+"10/10/2018" -as [DateTime]
+
+# Reformatting Date
+"{0:d-MMM-yyy}"-f (Get-Date)
+23-Oct-2018
+
+"{0:d-MMM-yyy}"-f (Get-Date), (Get-Date).AddDays(-5)
+23-Oct-2018
+
+"{1:d-MMM-yyy}"-f (Get-Date), (Get-Date).AddDays(-5)
+18-Oct-2018
+
+#Format Operator
+Get-Help about_operators -ShowWindow
+
+"{1}{0}{2}{0}{3}{0}{4}" -f "-","Text","separated","by","dash"
+Text-separated-by-dash
+
+"{1}{0,5}{2,-5}{0}{3}{0}{4}" -f "-","Text","separated","by","dash" #Alignment, Dash printed after 5 Spaces
+Text    -separated-by-dash
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
 -x-
