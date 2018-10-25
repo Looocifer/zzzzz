@@ -713,8 +713,8 @@ https://www.amazon.com/gp/product/1449320686/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&
 ################################################################
 #                Meaningful Problems in Class                  #
 ################################################################
-Task : Create new Function Filter-Service and have Computer Name as Parameter. Get List of Services and feed Running ones to Running.txt
-and Stopped ones to Stopped.txt. Mention Count of Running & Stopped Services at the end.
+Task : Create new Function “Filter-Service” and have Computer Name as Parameter. Get List of Services and feed Running ones into Running.txt and Stopped ones into Stopped.txt.
+Mention Count of Running & Stopped Services at the end.
 
 
 My Solution (there are at least a dozen other ways of getting it done)
@@ -739,4 +739,49 @@ Write-Host 'Started Services' $S
 Write-Host 'Stopped Services' $R
 }
 
-- ENDE -
+- >< -
+
+##### Compute & Structure Efficient Method w/ Begin-End, Switch & Empty Arrays
+
+Function Filter-Service ($Computer=$env:COMPUTERNAME)
+{
+ 
+Begin {
+$RS = @()
+$SS = @()
+$Running=0; $Stopped=0
+}
+ 
+Process {
+Switch (Get-Service -ComputerName $Computer)
+{
+   {$_.Status -eq "running"} {
+       $RS += $_.Name
+       $Running++
+       }
+   {$_.Status -eq "stopped"} {
+       $SS += $_.Name
+       $Stopped++
+       }
+}
+}
+ 
+End {
+$RS > .\Running.txt
+$SS > .\Stopped.txt
+ 
+Write-Host 'Started Services :' $Running -ForegroundColor Green # (Get-Content .\Running.txt).Count
+Write-Host 'Stopped Services :' $Stopped -ForegroundColor Red   # (Get-Content .\Stopped.txt).Count
+ 
+# Display To Screen
+notepad.exe .\Running.txt; notepad.exe .\Stopped.txt
+}
+}
+
+- >< -
+
+
+
+________________________________________________________________________________________________________________________________________
+
+<END>
