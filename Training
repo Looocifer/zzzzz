@@ -697,6 +697,8 @@ Get-CIMInstance (Win 8.1 onwards)
 (Get-Ciminstance -class Win32_ComputerSystem).DomainRole
 (Get-WMIObject -class Win32_ComputerSystem).DomainRole
 
+Class/Object Ref : https://docs.microsoft.com/en-us/windows/desktop/CIMWin32Prov/win32-computersystem
+
 Reference,
 0 (0x0)  Standalone Workstation 
 1 (0x1)  Member Workstation
@@ -715,7 +717,7 @@ Task : Create new Function Filter-Service and have Computer Name as Parameter. G
 and Stopped ones to Stopped.txt. Mention Count of Running & Stopped Services at the end.
 
 
-One of the Solutions
+My Solution (there are at least a dozen other ways of getting it done)
 
 Function Filter-Service ($Computer=$env:COMPUTERNAME)
 {
@@ -733,10 +735,8 @@ $Service.DisplayName >> .\Stopped.txt
 }
 $R = (Get-Content .\Running.txt).Count
 $S = (Get-Content .\Stopped.txt).Count
-Write-Host 'Stopped Services' $S
+Write-Host 'Started Services' $S
 Write-Host 'Stopped Services' $R
 }
 
-
 - ENDE -
- 
