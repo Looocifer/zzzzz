@@ -1,6 +1,14 @@
 aka.ms/premiereducation
 https://whatpixel.com/10-best-powershell-books/
 https://www.d.umn.edu/~gshute/softeng/object-oriented.html
+v3 Jeffrey Snover (creator of PS) & Jason Helmick - https://channel9.msdn.com/Series/GetStartedPowerShell3
+
+Sample PDF for Book Recommended by Trainer : https://manning-content.s3.amazonaws.com/download/c/f6b304a-bc0f-4a6f-bf37-d3e17745ad0b/PStoolmakingsamplech20.pdf
+Official Free Resources : https://powershell.org/free-resources/
+
+*** Ctrl + J : Pre-Defined Template Call List PopUp in ISE
+
+Measure-Command {}
 
 Get-Help about_ (General Topics)
 
@@ -430,7 +438,7 @@ Handles  NPM(K)    PM(K)      WS(K) VM(M)   CPU(s)     Id ProcessName
     737      37    45608      58500 ...92    97.66    604 svchost                                                                    
     261      22    42228      57320 ...25    75.91   3664 dwm   
 
-#Regular Expressions
+#Regular Expressions (REGEX)
 
 #Following 3 will do the same thing.
 $svcs= Get-Service
@@ -598,6 +606,7 @@ process 4
 process 5
 end 5
 
+** If only passing Params in Begin & End then explicitly mentioning Begin/End can be omitted.
 
 function My-Function
 {
@@ -625,11 +634,76 @@ Get-Service |
  Foreach-Object –begin {"Counting Services..." ; $count=0} `
   –process {$count++} `
   –end {“$count services were found” }
+  
+----------------------------------------------------------------------------------------------------------------------------------------
+DAY 3 (Modules 4 > 8 > 12 > 11) - Arrays, Hashtables, Loops (Flow Control)
+----------------------------------------------------------------------------------------------------------------------------------------
+
+@() Array
+@{} Hashtable
+
+Hashtable can be passed into a command as values required by the command.
+$var = @{}
+Verb-Noun @var ($ changes to @)
+
+# Loops (Grouped by Interchangibility)
+
+While     > Runs mandatorily under <condition> = $true
+Do .. While  > Runs at least once without <condition> = %true
+Do .. Until (reverse -not switch in While) > Runs till <condition> = $false
+
+For (init; condition; increment/decrement)
+ForEach > Built to enumerate.
+
+Switch () > Runs through all listed conditions regardless for all lookup values mentioned in switch.
+Default {} is used as Else ; Not MANDATORY to be defined.
+If .. Else > Runs If till Else
+
+foreach ($File in Get-ChildItem C:\temp -File) {$File}
+
+########################################################################################################################################
+Output Difference based off -Switch placement (Ref -Exact & -Wildcard) i.e. Resolves conflicts by last in line.
+All Switches for "Switch" > -CaseSensitive -Wildcard -Exact -Regex -Parallel -File (PS 5.1)
+$_ is better used to refere to the pipeline value in case of Switch base query value.
+########################################################################################################################################
+
+switch -CaseSensitive -Exact -Wildcard ("spooler")
+{
+"SPOOLER" {"Caps"}
+"spooler" {"Not Caps"}
+"s*" {"Wildcard"}
+}
+
+Not Caps
+Wildcard
+
+switch -CaseSensitive -Wildcard -Exact ("spooler")
+{
+"SPOOLER" {"Caps"}
+"spooler" {"Not Caps"}
+"s*" {"Wildcard"}
+}
+
+Not Caps # Doesn't show Wildcard this time.
+
+########################################################################################################################################
+
 ----------------------------------------------------------------------------------------------------------------------------------------
 -x-
 
 Get-WMIObject
 Get-CIMInstance (Win 8.1 onwards)
 
-Books,
+(Get-Ciminstance -class Win32_ComputerSystem).DomainRole
+(Get-WMIObject -class Win32_ComputerSystem).DomainRole
+
+Reference,
+0 (0x0)  Standalone Workstation 
+1 (0x1)  Member Workstation
+2 (0x2)  Standalone Server
+3 (0x3)  Member Server
+4 (0x4)  Backup Domain Controller
+5 (0x5)  Primary Domain Controller
+
+Books (URL for Added Discount),
 https://www.amazon.com/gp/product/1449320686/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1449320686&linkId=8c0e9c85fd23b219ca218c109af28045
