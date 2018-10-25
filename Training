@@ -707,3 +707,36 @@ Reference,
 
 Books (URL for Added Discount),
 https://www.amazon.com/gp/product/1449320686/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1449320686&linkId=8c0e9c85fd23b219ca218c109af28045
+
+################################################################
+#                Meaningful Problems in Class                  #
+################################################################
+Task : Create new Function Filter-Service and have Computer Name as Parameter. Get List of Services and feed Running ones to Running.txt
+and Stopped ones to Stopped.txt. Mention Count of Running & Stopped Services at the end.
+
+
+One of the Solutions
+
+Function Filter-Service ($Computer=$env:COMPUTERNAME)
+{
+Remove-Item .\Running.txt -ErrorAction SilentlyContinue
+Remove-Item .\Stopped.txt -ErrorAction SilentlyContinue
+ForEach ($Service in Get-Service){
+If ($Service.Status -eq "Running")
+{
+$Service.DisplayName >> .\Running.txt
+}
+Else
+{
+$Service.DisplayName >> .\Stopped.txt
+}
+}
+$R = (Get-Content .\Running.txt).Count
+$S = (Get-Content .\Stopped.txt).Count
+Write-Host 'Stopped Services' $S
+Write-Host 'Stopped Services' $R
+}
+
+
+- ENDE -
+ 
