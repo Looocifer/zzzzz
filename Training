@@ -20,10 +20,14 @@ Get-Verb : List of Approved Verbs
 $Profile | Select *
 $Profile
 
+Read-Host // scanf
+Write-Host // printf
+
 New-PSSession only to save. Save and use via Invoke. When you want to work with multiple machines at a time.
 Enter/Exit-PSSession to create a temporary session which does not get saved.
 
-Clear-Variable $Error
+Clear-Variable Error // No Dollar
+$Variable:a // Print Current Value
 
 $_ or $psitem is Current Pipeline Object
 Boolean Values do not need an =$true as that is default query.
@@ -756,9 +760,193 @@ Version    Name                                Repository           Description
 DAY 4 (Modules 16 > 10) Scope, Providers
 ----------------------------------------------------------------------------------------------------------------------------------------
 
-
+Execution Policy
 Scope
-Signing
+Script Signing ***
+Dot Sourcing
+Providers
+
+Get-PSDrive // Powershell Drives
+Providers create the corresponding Drive or Entry Point.
+
+Built-In
+Get-ChildItem Variable:
+
+Name           Used (GB)     Free (GB) Provider      Root                                             CurrentLocation
+----           ---------     --------- --------      ----                                             ---------------
+Alias                                  Alias                                                                         
+C                  33.43        431.84 FileSystem    C:\                                                  Users\Admin
+Cert                                   Certificate   \                                                               
+Env                                    Environment                                                                   
+Function                               Function                                                                      
+HKCU                                   Registry      HKEY_CURRENT_USER                                               
+HKLM                                   Registry      HKEY_LOCAL_MACHINE                                              
+Variable                               Variable                                                                      
+WSMan                                  WSMan                                                                         
+
+Get-ChildItem HKCU:\
+
+    Hive: HKEY_CURRENT_USER
+
+
+Name                           Property                                                                                              
+----                           --------                                                                                              
+AppEvents                                                                                                                            
+AppXBackupContentType                                                                                                                
+Console                        ColorTable00             : 0                                                                          
+                               ColorTable01             : 8388608                                                                    
+                               ColorTable02             : 32768                                                                      
+                               ColorTable03             : 8421376                                                                    
+                               ColorTable04             : 128                                                                        
+                               ColorTable05             : 8388736                                                                    
+                               ColorTable06             : 32896                                                                      
+                               ColorTable07             : 12632256                                                                   
+                               ColorTable08             : 8421504                                                                    
+                               ColorTable09             : 16711680                                                                   
+                               ColorTable10             : 65280                                                                      
+                               ColorTable11             : 16776960                                                                   
+                               ColorTable12             : 255                                                                        
+                               ColorTable13             : 16711935                                                                   
+                               ColorTable14             : 65535                                                                      
+                               ColorTable15             : 16777215                                                                   
+                               CtrlKeyShortcutsDisabled : 0                                                                          
+                               CursorSize               : 25                                                                         
+                               EnableColorSelection     : 0                                                                          
+                               ExtendedEditKey          : 1                                                                          
+                               ExtendedEditKeyCustom    : 0                                                                          
+                               FaceName                 : __DefaultTTFont__                                                          
+                               FilterOnPaste            : 1                                                                          
+                               FontFamily               : 0                                                                          
+                               FontSize                 : 1048576                                                                    
+                               FontWeight               : 0                                                                          
+                               ForceV2                  : 1                                                                          
+                               FullScreen               : 0                                                                          
+                               HistoryBufferSize        : 50                                                                         
+                               HistoryNoDup             : 0                                                                          
+                               InsertMode               : 1                                                                          
+                               LineSelection            : 1                                                                          
+                               LineWrap                 : 1                                                                          
+                               LoadConIme               : 1                                                                          
+                               NumberOfHistoryBuffers   : 4                                                                          
+                               PopupColors              : 245                                                                        
+                               QuickEdit                : 1                                                                          
+                               ScreenBufferSize         : 589889656                                                                  
+                               ScreenColors             : 7                                                                          
+                               ScrollScale              : 1                                                                          
+                               TrimLeadingZeros         : 0                                                                          
+                               WindowAlpha              : 255                                                                        
+                               WindowSize               : 1966200                                                                    
+                               WordDelimiters           : 0                                                                          
+Control Panel                                                                                                                        
+Environment                    TEMP     : C:\Users\Admin\AppData\Local\Temp                                                          
+                               TMP      : C:\Users\Admin\AppData\Local\Temp                                                          
+                               OneDrive : C:\Users\Admin\OneDrive                                                                    
+EUDC                                                                                                                                 
+Keyboard Layout                                                                                                                      
+Network                                                                                                                              
+Printers                                                                                                                             
+SOFTWARE                                                                                                                             
+System                                                                                                                               
+Volatile Environment           LOGONSERVER               : \\DESKTOP-MTF3GP3                                                         
+                               USERDOMAIN                : DESKTOP-MTF3GP3                                                           
+                               USERNAME                  : Admin                                                                     
+                               USERPROFILE               : C:\Users\Admin                                                            
+                               HOMEPATH                  : \Users\Admin                                                              
+                               HOMEDRIVE                 : C:                                                                        
+                               APPDATA                   : C:\Users\Admin\AppData\Roaming                                            
+                               LOCALAPPDATA              : C:\Users\Admin\AppData\Local                                              
+                               USERDOMAIN_ROAMINGPROFILE : DESKTOP-MTF3GP3                                                           
+
+Get-Item HKCU:\Environment
+
+    Hive: HKEY_CURRENT_USER
+
+
+Name                           Property                                                                                              
+----                           --------                                                                                              
+Environment                    TEMP     : C:\Users\Admin\AppData\Local\Temp                                                          
+                               TMP      : C:\Users\Admin\AppData\Local\Temp                                                          
+                               OneDrive : C:\Users\Admin\OneDrive                 
+                               
+Get-ItemProperty HKCU:\Environment -Name OneDrive
+
+OneDrive     : C:\Users\Admin\OneDrive
+PSPath       : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment
+PSParentPath : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER
+PSChildName  : Environment
+PSDrive      : HKCU
+PSProvider   : Microsoft.PowerShell.Core\Registry
+
+(Get-ItemProperty HKCU:\Environment -Name OneDrive).OneDrive
+C:\Users\Admin\OneDrive
+
+Set-ItemProperty HKCU:\Environment -Name TestKey -Value 1 // Create or Edit Existing CANNOT SET TYPE
+New-ItemProperty HKCU:\Environment -PropertyType QWORD -Value 2 -Name TestKey2 // Create Only; Can Set Type
+
+TestKey2     : 2
+PSPath       : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment
+PSParentPath : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER
+PSChildName  : Environment
+PSDrive      : HKCU
+PSProvider   : Microsoft.PowerShell.Core\Registry
+
+New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+
+Name           Used (GB)     Free (GB) Provider      Root                                                             CurrentLocation
+----           ---------     --------- --------      ----                                                             ---------------
+HKCR                                   Registry      HKEY_CLASSES_ROOT                                                               
+
+
+New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+New-PSDrive -Name H -PSProvider FileSystem -Root \\2012R2-MS\Homeshare -Persist -Credential (Get-Credential Contose\DanPark)
+Remove-PSDrive -Name HKCR
+
+Item, ChildItem, ItemProperty - Can be used on PSDrives
+ChildItem in terms of Registry will only list sub directories
+
+Get-Command -Noun Item
+
+CommandType     Name                                               Version    Source                                                 
+-----------     ----                                               -------    ------                                                 
+Cmdlet          Clear-Item
+Cmdlet          Copy-Item
+Cmdlet          Get-Item     // Get Target Item Details & Properties
+Cmdlet          Invoke-Item  // Equivalent to Double-Click
+Cmdlet          Move-Item
+Cmdlet          New-Item
+Cmdlet          Remove-Item
+Cmdlet          Rename-Item
+Cmdlet          Set-Item
+
+Get-Command -Noun ItemProperty | Select CommandType,Name
+
+CommandType Name               
+----------- ----               
+     Cmdlet Clear-ItemProperty 
+     Cmdlet Copy-ItemProperty  // Destination Item has to exist as a mandate.
+     Cmdlet Get-ItemProperty   
+     Cmdlet Move-ItemProperty  
+     Cmdlet New-ItemProperty   
+     Cmdlet Remove-ItemProperty
+     Cmdlet Rename-ItemProperty
+     Cmdlet Set-ItemProperty   
+
+New-Item HKCU:\Environment -Name TestKey -ItemType Directory // Reg Key
+
+Clear-Content C:\Windows\Logs\bpa\Reports\* -Include 2013* -Exclude 2014*
+Help Clear-Content -Parameter Include
+
+-Include <String[]>
+    Specifies, as a string array, content that this cmdlet clears. The value of this parameter qualifies the Path parameter. Enter a 
+    path element or pattern, such as "*.txt". Wildcards are permitted.
+    
+    Required?                    false
+    Position?                    named
+    Default value                None
+    Accept pipeline input?       False
+    Accept wildcard characters?  false
+    
+Clear-Content -? // Default Help
 
 *** Brush Up
 
@@ -819,6 +1007,9 @@ https://www.amazon.com/gp/product/1449320686/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&
 Task : Create new Function “Filter-Service” and have Computer Name as Parameter. Get List of Services and feed Running ones into Running.txt and Stopped ones into Stopped.txt.
 Mention Count of Running & Stopped Services at the end.
 
+$Function:Pause
+Read-Host 'Press Enter to continue...' | Out-Null
+cd Function:
 
 My Solution (there are at least a dozen other ways of getting it done)
 
