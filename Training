@@ -1100,8 +1100,11 @@ Action                           DisplayName Shortcut                        Sub
 Option comes up in Add-Ons Menu.
 
 $psISE.Options.ConsolePaneBackgroundColor=‘orange’
+$psISE.Options.ConsolePaneTextBackgroundColor-'Orange'
 $psISE.Options.RestoreDefaults()
 
+
+DSC > https://docs.microsoft.com/en-us/powershell/dsc/configurations
 ________________________________________________________________________________________________________________________________________
 
 <END>
