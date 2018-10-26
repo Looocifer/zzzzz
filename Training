@@ -6,6 +6,33 @@ v3 Jeffrey Snover (creator of PS) & Jason Helmick - https://channel9.msdn.com/Se
 Sample PDF for Book Recommended by Trainer : https://manning-content.s3.amazonaws.com/download/c/f6b304a-bc0f-4a6f-bf37-d3e17745ad0b/PStoolmakingsamplech20.pdf
 Official Free Resources : https://powershell.org/free-resources/
 
+For building GUI, get the XML from VB.
+=======================================================================================================================================
+[xml]$XAML = @"
+.
+.
+.
+.
+.
+"@
+
+$Reader=(New-ObjectSystem.xml.xmlNodeReader $XAML)
+$Window=[Windows.Markup.XamlReader]::Load($Reader)
+
+# Create Variables out of each element.
+$XAML.SelectNodes("//*[@*[contains(translate(name(.),'n','N'),'Name')]]")  | ForEach {
+New-Variable -Name $_.Name -Value $Window.FindName($_.Name) -Force}
+
+$Submit.add_click({
+
+if($Left.IsChecked) {Write-Host "Left" -ForegroundColor Cyan}
+if($Right.IsChecked) {Write-Host "Right" -ForegroundColor Yellow}
+
+})
+
+$Window.ShowDialog() | Out-Null
+=======================================================================================================================================
+
 *** Ctrl + J : Pre-Defined Template Call List PopUp in ISE
 
 Measure-Command {}
@@ -1102,7 +1129,6 @@ Option comes up in Add-Ons Menu.
 $psISE.Options.ConsolePaneBackgroundColor=‘orange’
 $psISE.Options.ConsolePaneTextBackgroundColor-'Orange'
 $psISE.Options.RestoreDefaults()
-
 
 DSC > https://docs.microsoft.com/en-us/powershell/dsc/configurations
 ________________________________________________________________________________________________________________________________________
