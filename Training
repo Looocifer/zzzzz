@@ -760,11 +760,19 @@ Version    Name                                Repository           Description
 DAY 4 (Modules 16 > 10) Scope, Providers
 ----------------------------------------------------------------------------------------------------------------------------------------
 
-Execution Policy
-Scope
-Script Signing ***
-Dot Sourcing
-Providers
+- Execution Policy
+- Scope // Function Global:Top-Process // Shortcut instead of '-Scope Global'
+- Script Signing *** // <EG> Get-ChildItem Cert:\CurrentUser\CA
+  - Has to be a "Code Signing Cert".
+  - Does NOT invoke Access Control, just validates Authenticity of a script.
+  - Change in even one single character after signing will throw Warnings. Resign all over again to get rid of that.
+
+https://sid-500.com/2017/10/26/how-to-digitally-sign-powershell-scripts/
+New-SelfSignedCertificate -DnsName patrick@sid-500.com -CertStoreLocation Cert:\CurrentUser\My\ -Type Codesigning
+Set-AuthenticodeSignature -FilePath C:\Temp\script1.ps1 -Certificate (Get-ChildItem -Path Cert:\CurrentUser\My\ -CodeSigningCert)
+
+- Dot Sourcing // Bypass Scope Factor // . Top-Process > Gets the variable value as well.
+- Providers // Entry Points to Key & PS Specific Repositories required by ISE
 
 Get-PSDrive // Powershell Drives
 Providers create the corresponding Drive or Entry Point.
@@ -1073,6 +1081,26 @@ notepad.exe .\Running.txt; notepad.exe .\Stopped.txt
 }
 
 - >< -
+
+$psISE
+
+CurrentPowerShellTab         : Microsoft.PowerShell.Host.ISE.PowerShellTab
+CurrentFile                  : Microsoft.PowerShell.Host.ISE.ISEFile
+CurrentVisibleHorizontalTool : 
+CurrentVisibleVerticalTool   : Microsoft.PowerShell.Host.ISE.ISEAddOnTool
+Options                      : Microsoft.PowerShell.Host.ISE.ISEOptions
+PowerShellTabs               : {PowerShell 1}
+
+$psISE.CurrentPowerShellTab.AddOnsMenu.SubMenus.Add( ‘Bing It!’, { Start ‘http://www.bing.com.au’ }, ‘Control+Alt+1’ )
+
+Action                           DisplayName Shortcut                        Submenus
+------                           ----------- --------                        --------
+ Start ‘http://www.bing.com.au’  Bing It!    System.Windows.Input.KeyGesture {}      
+
+Option comes up in Add-Ons Menu.
+
+$psISE.Options.ConsolePaneBackgroundColor=‘orange’
+$psISE.Options.RestoreDefaults()
 
 ________________________________________________________________________________________________________________________________________
 
