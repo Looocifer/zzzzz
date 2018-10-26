@@ -17,6 +17,14 @@ Get-Help about_ (General Topics)
 Set-Alias // To change Existing Alias
 Get-Verb : List of Approved Verbs
 
+$Profile | Select *
+$Profile
+
+New-PSSession only to save. Save and use via Invoke. When you want to work with multiple machines at a time.
+Enter/Exit-PSSession to create a temporary session which does not get saved.
+
+Clear-Variable $Error
+
 $_ or $psitem is Current Pipeline Object
 Boolean Values do not need an =$true as that is default query.
 
@@ -743,6 +751,45 @@ Version    Name                                Repository           Description
 
 
 ########################################################################################################################################
+
+----------------------------------------------------------------------------------------------------------------------------------------
+DAY 4 (Modules 16 > 10) Scope, Providers
+----------------------------------------------------------------------------------------------------------------------------------------
+
+
+Scope
+Signing
+
+*** Brush Up
+
+HT Use Case 1 : To get data from multiple sources and then to form an object.
+$HashTable["Role"] = xyz
+%HashTable.Role = xyz
+[PSCustomObject]$Hashtable
+
+Use Case 2 :
+Custom Properties @{l= ;e= }
+
+Use Case 3 : Splatting; passing multile argments using HT.
+
+-><-
+
+-eq      - looks for Exact // -ceq is Case Sensitive
+-like    - accepts Wildcards
+-match   - accepts REGEX
+
+-><-
+
+Input - Get-Commands
+Process - Select, Where, Sort, Group, Measure, Compare, ForEach
+Output - Format-(List, Table, Wide), Export-(csv, clixml)
+
+$_ can be given name by -PipelineVariable
+
+Data Types
+
+[int]$a = 10 // Accepts only Integers into target variable
+$a = [int]10 // Attempts to convert input value into target data type and then casts it into the variable.
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 -><-
