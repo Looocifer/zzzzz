@@ -1,0 +1,1 @@
+wevtutil query-events System /count:3 /rd:true /format:text /q:"Event[System[(EventID=6005)]]"
