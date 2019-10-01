@@ -1,1 +1,61 @@
+qprocess
+net stats server/workstation (Queries Server or Workstation service from services.msc)
+sfc /scannow
+vssadmin list writers/providers
+
 wevtutil query-events System /count:3 /rd:true /format:text /q:"Event[System[(EventID=6005)]]"
+
+•	List Permissions of current directory and all subdirectories.
+dir /s | icacls * /c /t > C:\temp\Perms.xls 
+Export to xls not txt, else formatting may not make sense.
+
+•	List Paths where “Access was denied” meaning ownership is not with current user and thus query failed
+(Long Paths will most likely fail; Full path shown since /b has been included)
+dir /b /s | icacls . /verify /c /t | findstr -i Access (use as suffix > C:\temp\Perms_Denied.xls (or txt since these are one liners) if you want to export it)
+
+WSUS Client
+wuauclt /detectnow
+wuauclt /reportnow
+
+Delprof
+DelProf2.exe /i /u /ed:Administrator /c:Hostname
+
+Reg Query HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /S /v DisplayName
+
+SYDI Wrapper
+cscript.exe sydi-server.vbs -ex -sh -o""C:\temp\DC1.xml -t.""
+
+quser /server <IP>
+logoff <session number> /server <IP>
+
+get-vm | Get-HardDisk | where {$_.Persistence -eq "IndependentPersistent"}
+
+dcdiag /c /e /v /q
+
+Reload Perf Counters : lodctr /r
+List Available Counters : typeperf -qx
+Disable Disk Perf : diskperf -N
+Enable Disk Perf : diskperf -Y
+
+fsutil fsinfo ntfsinfo <drive letter>
+repadmin /showrepl /errorsonly
+repadmin /syncall /APed
+
+
+tasklist /svc : List Processes along with their Service Name (if any)
+tasklist /FI "STATUS eq running" : Find all running Processes
+Add /FO List to get list format in output
+setspn -a http//
+setspn -x -f (x for 'any', f for 'search forest', q for 'query specific')
+
+net use		: To view all Shared Drives
+net view \\HOST	: To list all shares
+
+dsquery server -o rdn	: List all DCs in Domain
+netdom query fsmo	: FSMO Role Holders
+
+PSEXEC.EXE @serverslist.txt NET LOCALGROUP "Guests" "anonymous" /DELETE
+PSEXEC.EXE @serverslist.txt NET LOCALGROUP "Users" "anonymous" /ADD
+
+set devmgr_show_nonpresent_devices=1
+devmgmt.msc
