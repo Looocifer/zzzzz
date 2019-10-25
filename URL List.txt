@@ -1,0 +1,2 @@
+https://blogs.vmware.com/vsphere/2016/02/understanding-the-three-types-of-vm-tools.html
+https://www.mindthevirt.com/tag/x-vswitch-vmotion/
