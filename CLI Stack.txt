@@ -668,6 +668,9 @@ ________________________________________________________________________________
 
 Citrix 7.x
 
+PVS Checker for Citrix : https://support.citrix.com/article/CTX217122
+Eg Error : No DHCP Offers Received after Legacy BIOS Test (not BDM Test)
+
 Monitor Licenses, Registration & Maintenance at all times.
 
 If Licenses are fully utilized then no new connections will be accepted.
