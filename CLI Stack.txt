@@ -48,7 +48,6 @@ fsutil fsinfo ntfsinfo <drive letter>
 repadmin /showrepl /errorsonly
 repadmin /syncall /APed
 
-
 tasklist /svc : List Processes along with their Service Name (if any)
 tasklist /FI "STATUS eq running" : Find all running Processes
 Add /FO List to get list format in output
@@ -86,6 +85,22 @@ runas /profile /user:administrator “Driver:\folder\program”
 esxcfg-nics -l
 esxcli network nic up -n vmnic10
 esxcli network nic get -n vmnic10
+
+Get-VM | Get-HardDisk | where {$_.Persistence -eq "IndependentPersistent"}
+Get-Cluster ClusterName | Get-VMhost | Get-VMHostHBA -Type FibreChannel | Select VMHost,Device,@{N="WWN";E={"{0:X}" -f $_.NodeWorldWideName}}
+Get-Cluster ClusterName | Get-VMhost | Get-VMHostHBA -Type FibreChannel | Select VMHost,Device,@{N="WWN";E={"{0:X}" -f $_.PortWorldWideName}}
+Get-VM | Select Name, @{N="Datastore";E={[string]::Join(',',(Get-Datastore -Id $_.DatastoreIdList | Select -ExpandProperty Name))}}, @{N="Folder";E={$_.Folder.Name}}  | ogv
+Get-VMHost | Select-Object -Property Name,LicenseKey | Out-Gridview
+Get-VMHost | Get-VMHostStorage -RescanAllHBA
+Get-VMHost |Sort Name|Select Name, @{N=“NTPServer“;E={$_ |Get-VMHostNtpServer}}, @{N=“ServiceRunning“;E={(Get-VmHostService -VMHost $_ |Where-Object {$_.key-eq “ntpd“}).Running}} | Out-Gridview
+foreach($esxcli in get-vmhost|get-esxcli){""|select @{n='Time';e={$esxcli.system.time.get()}},@{n='hostname';e={$esxcli.system.hostname.get().hostname}} }
+Get-VM | Get-Snapshot | Select VM,Name,Description,@{Label="Size";Expression={"{0:N2} GB" -f ($_.SizeGB)}},Created | ogv
+(Get-VM | Get-View | Where-Object {$_.Config.MemoryHotAddEnabled -eq "True"}).Name 
+Get-VM | Get-CDDrive | Select IsoPath | Out-Gridview
+Get-VM | FT Name, @{Label="ISO File"; Expression = { ($_ | Get-CDDrive).ISOPath }} 
+
+Get-VMHost | Format-List
+Get-Datastore | Format-List
 
 dir /b /s | icacls . /verify /T /C | findstr -i Access
 
@@ -485,5 +500,362 @@ NtdsAudit.exe "ntds.dit" -s "SYSTEM" -p pwdump.txt --users-csv users.csv
  
 7.)	Now you should able to see “pwddump.txt” and “users.csv” files 
 8.)	Open “pwddump.txt” and copy the content to excel. Clean up the data using “Text to Columns” option and provide the report.
+____________________________________________________________________________________________________________________________________________________________________________
+
+Utility URLs.
+
+VMware Downloads	https://my.vmware.com/web/vmware/downloads
+VMware Account Logon	https://my.myvmware.com
+VMware Support	https://my.vmware.com/support
+Vmware Support Details (Production)	https://www.vmware.com/support/services/production.html
+VMware Verion Update Reference	https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=1014508
+vSphere Version Update Reference	https://kb.vmware.com/selfservice/search.do?cmd=displayKC&docType=kc&docTypeID=DT_KB_1_1&externalId=2143838
+
+
+Other URLs.
+https://www.google.com/search?q=ESXI+SAB+boot+host+updated%2Bupdate+manager&source=lnms&tbm=isch&sa=X&ved=0ahUKEwj6oI3N4cfaAhUFTI8KHXhdBt4Q_AUICygC&biw=1366&bih=654#imgrc=4jMmQuQpJWUEPM:
+https://docs.vmware.com/en/VMware-vSphere/6.0/com.vmware.vsphere.update_manager.doc/GUID-90AA4FDB-B29B-4F7F-A400-38EFC4110024.html
+https://www.vladan.fr/how-to-upgrade-a-esxi-6-0-to-esxi-6-5-via-vmware-update-manager/
+
+____________________________________________________________________________________________________________________________________________________________________________
+Get-LockedOutLocation.ps1
+
+#Requires -Version 3.0
+<#
+.SYNOPSIS
+    Get-LockedOutUser.ps1 returns a list of users who were locked out in Active Directory.
+.DESCRIPTION
+    Get-LockedOutUser.ps1 is an advanced script that returns a list of users who were locked out in Active Directory
+by querying the event logs on the PDC emulator in the domain.
+.PARAMETER UserName
+    The userid of the specific user you are looking for lockouts for. The default is all locked out users.
+.PARAMETER StartTime
+    The datetime to start searching from. The default is all datetimes that exist in the event logs.
+.EXAMPLE
+    Get-LockedOutUser.ps1
+.EXAMPLE
+    Get-LockedOutUser.ps1 -UserName 'mikefrobbins'
+.EXAMPLE
+    Get-LockedOutUser.ps1 -StartTime (Get-Date).AddDays(-1)
+.EXAMPLE
+    Get-LockedOutUser.ps1 -UserName 'mikefrobbins' -StartTime (Get-Date).AddDays(-1)
+#>
+[CmdletBinding()]
+param (
+    [ValidateNotNullOrEmpty()]
+    [string]$DomainName = $env:USERDOMAIN,
+    [ValidateNotNullOrEmpty()]
+    [string]$UserName = "*",
+    [ValidateNotNullOrEmpty()]
+    [datetime]$StartTime = (Get-Date).AddDays(-3)
+)
+Invoke-Command -ComputerName (
+    [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain((
+        New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName))
+    ).PdcRoleOwner.name
+) {
+    Get-WinEvent -FilterHashtable @{LogName='Security';Id=4740;StartTime=$Using:StartTime} |
+    Where-Object {$_.Properties[0].Value -like "$Using:UserName"} |
+    Select-Object -Property TimeCreated,
+        @{Label='UserName';Expression={$_.Properties[0].Value}},
+        @{Label='ClientName';Expression={$_.Properties[1].Value}}
+} -Credential (Get-Credential) |
+Select-Object -Property TimeCreated, UserName, ClientName
+____________________________________________________________________________________________________________________________________________________________________________
+VMware DHC
+Prerequisite : Latest PowerCLI & PowerShell installed. Elaborated for L1s.
+
+First log on to vSphere Client and check HA-DRS settings, mainly DRS.
+Next check for ANY alert on the vCenter level in the hierarchy (LHS), make sure you understand all of those and in case something is a threat, get it nullified.
+If you get alert for Memory on a VM, make sure you set Graph Options to Active% + Consumed + Balloon in the Performance Tab to get an idea of the actual Memory Health.
+No VMs in Production should Balloon, this means that real RAM is out of capacity.
+
+Start PowerCLI then Connect-VIServer -Server {vCenter Server IP}
+Try to get the latest version installed.
+Tip : You can connect multiple vCenter Servers in parallel to get a consolidated workspace.
+
+Get-VMHost | Out-Gridview
+Out-Gridview allows you to Copy Data from selected rows and / or Sort Columns on the go.
+In recent versions, we can use ogv as well as a shortcut else in older versions we have to create that alias first.
+
+ 
+Example of checking ESXi Host Service Status with refresh.
+Get-VMHostService -Host {ESXi Host IP} -Refresh
+
+ 
+Any of these services can be started via vSphere GUI. Select ESXi Host > Configuration > Security Profile > (Services) Properties > Select Required Servcie > Options > Start or Stop.
+
+ 
+Command to get Independent Persistent VMDKs  (Virtual Disks for Vitual Machines). Direct SAN Mapped LUNs specially for Windows Clusters have this setting but any VM having a locally defined Disk file has a catch.
+When taking a snapshot, VMware ignores Independent Disks. That is why the following command is important.
+There’s also an Independent Nonpersistent but Snapshotting those makes no sense because Nonpersistent configuration makes data volatile on that disk and every time that parent VM is powered off, the data is erased.
+
+Get-VM | Get-HardDisk | where {$_.Persistence -eq "IndependentPersistent"} | Out-Gridview
+
+Example of output. And the Datastore is mentioned in [ ] as well.
+ 
+
+Generate List of Current Snapshots.
+Get-VM | Get-Snapshot | Select VM,Name,Description,@{Label="Size";Expression={"{0:N2} GB" -f ($_.SizeGB)}},Created
+You can pipe output through Gridview to get a more manageable dataset.
+
+ 
+Get ESXi Host Current Time. Extremely important as this is part of the chain of Domain NTP and in case time goes offset by the limit defined in Default Domain Policy, then auth to components will fail.
+Some VMs will get their time updated via VMware Tools.
+foreach($esxcli in get-vmhost|get-esxcli){""|select @{n='Time';e={$esxcli.system.time.get()}},@{n='hostname';e={$esxcli.system.hostname.get().hostname}} }
+
+ 
+This command is GOLD : Get-VMHost | Get-VMHostStorage -RescanAllHBA or you can right click on an Host Cluster and hit Rescan All Datastores (HBAs and Vloumes both)
+Rescanning HBA is a necessity on so many occasions eg. When a new LUN is added, once a week, after a storage activity, etc.
+Without rescanning HBA a lot of Storage might remain unmanageable / invisible.
+Warning : Not to be run immediately before an activity because when HBAs are scanned, some Disaster Scale Features like vMotion are halted. Not to be run when vMotion(s) are taking place.
+Scroll up and down the Tasks Pane, checking thoroughly of anything In Progress before executing this.
+
+
+This is my Custom Script to check DS Status in seconds and get more details than the overhyped RV Tools Report. I shared this with TSG too.
+This is one of the MUST checks. Forget alerting, etc. One cannot take this for granted EVER.
+________________________________________
+$GDS = Get-Datastore
+$table = @()
+foreach ($ds in $GDS) {
+$dsview = $ds | Get-View
+$thisDS = "" | Select "DatastoreName","CanonicalName","OverallStatus","TotalSpaceTB","TotalSpaceGB","FreeSpaceGB"
+$thisDS."DatastoreName" = $ds.Name
+$thisDS."CanonicalName" = $dsview.info.vmfs.extent
+$thisDS."OverallStatus" = $dsview.OverallStatus
+$thisDS."TotalSpaceTB" = $ds.CapacityGB/1024
+$thisDS."TotalSpaceGB" = $ds.CapacityGB
+$thisDS."FreeSpaceGB" = $ds.FreeSpaceGB
+$table += $thisDS
+}
+$table | Out-Gridview 
+________________________________________
+Output (see how useful it is) :
+
+This is to get any ISOs mounted to any VM. Not unmounting after activity may lead to issues during vMotion, thus affecting Recovery in case of a Host Level Incident.
+Get-VM | FT Name, @{Label="ISO File"; Expression = { ($_ | Get-CDDrive).ISOPath }} 
+
+This is to get a list of the Licenses currently in use.
+Get-VMHost | Select-Object -Property Name,LicenseKey | Out-Gridview
+____________________________________________________________________________________________________________________________________________________________________________
+
+Random CLI
+
+Run > msinfo32 Check which values you can use from the output.
+Get current list of features installed in server : DISM.exe /Online /English /Get-Features /Format:Table
+Get list of psexec \\Hostname net localgroup "Administrators"
+
+Get full path as output for all files from current directory (.) : dir /s /b
+Search all SPNs in Forest : setspn -x -f (make sure to mark out duplicates from the output)
+Get all DCs in Domain : dsquery server -o rdn
+Get all GCs in Domain : dsquery server -o rdn -isgc
+Time Sync and backdoor check of count of DCs : w32tm /monitor (Wipro has blocked this function recently, the GetDCList call fails).
+Get Time Zone : w32tm /tz
+Get Block Size : fsutil fsinfo ntfsinfo <drive letter>
+Get all ADCS Servers : certutil.exe
+Get all Shared Objects (Drives, Printers, etc) : net view \\Hostname
+Get H/W Serial Number : wmic bios get serialnumber
+Get HDD Serial Number : wmic path win32_physicalmedia get SerialNumber (Running on VMs give weird values based off Datastore naa IDs)
+Inactive ADIDs (90 Days) : Search-ADAccount -UsersOnly -AccountInactive -TimeSpan 90 | ?{$_.enabled -eq $true} | %{Get-ADUser $_.ObjectGuid} | select name, givenname, surname | export-csv unusedaccounts.csv -NoTypeInformation
+Get list of installed Apps : Reg Query \\Hostname\HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /S /v DisplayName
+Get all installed patches : wmic qfe list
+Get all Detailed Services Stats in HTML Report : wmic service get /format:hform > C:\Services.html
+____________________________________________________________________________________________________________________________________________________________________________
+Get HBA Firmware Version (Windows), Powershell, Local :
+$WMI = Get-WmiObject -class MSFC_FCAdapterHBAAttributes -namespace "root\WMI" -computername localhost 
+$WMI.FirmwareVersion
+____________________________________________________________________________________________________________________________________________________________________________
+
+Citrix 7.x
+
+Monitor Licenses, Registration & Maintenance at all times.
+
+If Licenses are fully utilized then no new connections will be accepted.
+If an instance is Unregistered, it will not accept any connections.
+If an instance in Under Maintenance, it will not accept any new connections.
+
+
+Case 1 : Desktop Apps are laggy.
+
+1.	Log on to Citrix Studio and get an idea of the servers which are hosting the said service(s), if you find a lot of disconnected sessions in that Delivery Group then log them off, might resolve the issue.
+2.	Check for Machine Failures from Citrix Director. Log on with local admin and try restarting Citrix Profile Service in case you see a lot of (–) registered under ADID pane when you check connections for a specific server.
+3.	Individually log on to those servers and check,
+a. Last Boot Time (net stats workstation)
+> In case one or more weren’t rebooted within the last 10 days and were over utilized dynamically then resource leakage is probably the root cause. Might need a reboot.
+b. Memory & CPU Utilization via Task Manager (Ctrl + Shift + Esc)
+> See which users are utilizing more Memory / CPU. To perform a light audit, log on to Director and search by Username then check the Application Headers being used.
+4.	Log on to Director, search one or more of the ADIDs facing the issue then click on Details on the top right corner and focus on how much latency the user is facing (ms = milliseconds).
+ 
+Can be a local network issue or can be an issue with AWS since Citrix 7.6 is hosted on it. Ask both parties to check.
+
+
+Case 2 : Can authenticate to https://citrix.xxx.com/Citrix/xxx/ but cannot launch anything afterwards.
+
+1.	Check Studio for the user’s ADID in “sessions”. If you find any session (specially disconnected), log it off and ask user to try again.
+2.	Ask user’s credentials and use them on your computer (Open Incognito to allow a separate logon in the same browser), then log on and try to launch the Desktop that user is failing to launch.
+If Desktop is launching just fine then,
+a. User needs to uninstall and reinstall receiver on local machine.
+b. In case of some users when they work from home, they may have to disable forced-proxy related software from System Tray.
+If Desktop is not launching for you too,
+a. Check if the correct group has been added to the User’s ADID.
+b. Identify the current corrupted session (sometimes notified as a – in Studio), then temporarily put that server in Maintenance Mode and ask the user to log on again. If the analysis was correct then the user will be able to log on to another instance under the same delivery group successfully since that one should not be having a stale profile. Once user has logged on, pull the instance out of Maintenance Mode immediately as LB will not occur on that if it stays under maintenance.
+
+
+Case 3 : Application (Outlook / Skype / XYZ not working)
+
+A profile reset solves this issue 90% of times but user has to be notified in case you are performing one.
+Steps,
+1.	Log off the user.
+2.	Search and delete all of the user’s profiles from the instances under target delivery group.
+3.	Then ask the user to make a note of all the shared drives currently mapped because they will be gone after the rest. In fact user will have to reconfigure all logons, etc.
+After that go to \\ProfileServer\User_Profiles\ and rename the profile with his/her ADID or rename it with a .old or .older as suffix. This folder contains the settings mainly for most profiles *
+4.	In case you want to perform a 100% profile reset, then ask the user to take a backup of all important files in his/her shared drive, and remove the profile from \\ProfileServer\Redirected\ too.
+Redirected contains folders like Desktop, Documents, etc for most users *
+
+* ADIDs with a prefix of admin_ are generally exempt from this and all of their files are located under User_Profiles folder only.
+
+Extra : To view NTUSER.DAT and NTUSER.INI, you will have to allow system folders to be visible else you can run attrib *.* -a -h -r -s on required directory’s explorer pane (shortcut, PFB).
+Even typing cmd there directly opens command prompt in that directory.
+
+
+Case 4 : URL not working and it is not a certificate issue.
+
+1. Check if it’s working from your end to make sure there are no DNS issues.
+2. Ask user to access web browser, then Ctrl + Shift + Delete > Everything > Since Beginning of Time.
+3. Check local Root Cert Store and verify if the root cert is present under Trusted Root Certificates (mmc > Certificates).
+
+Best Practices : Remove stale profiles via Delprof (Biweekly or once a week). Pair woth GPO to force logoff dc'ed Sessions.
+Check Paging to ensure Memory availability.
+
+____________________________________________________________________________________________________________________________________________________________________________
+
+PS : Remote Config Windows NIC.
+
+New-PSSession -ComputerName 10.10.10.10
+Enter-PSSession -ComputerName 10.10.10.10
+
+Get-NetAdapter
+Get-NetAdapter -Name "Ethernet1" | Rename-NetAdapter -NewName "OSManagement" -PassThru
+
+Get-NetAdapter -Name OSManagement | Set-NetIPInterface -DHCP Enabled
+Get-NetAdapter -Name OSManagement | New-NetIPAddress -IPAddress 10.10.10.11 -PrefixLength 24
+Set-DnsClient -InterfaceAlias OSMaanagement -RegisterThisConnectionsAddress 0 #(or 1)
+route add 10.10.10.0 MASK 255.255.255.0 10.10.10.1 metric 3 -P
+route add 10.11.10.0 MASK 255.255.255.0 10.11.10.1 metric 4 -P
+Exit-PSSession 
+
+Route Print   
+
+____________________________________________________________________________________________________________________________________________________________________________
+
+KB URLs
+
+Hitachi Compute Blade 520 B3 Specs
+http://www.hitachi.co.jp/products/bladesymphony_global/bs520_hx3.html
+
+Hitachi Compute Blade 500 Datasheet
+https://www.hds.com/en-us/pdf/datasheet/hitachi-compute-blade-500-datasheet.pdf
+
+Hitachi Compute Blade 500 Whitepaper
+https://www.hds.com/en-us/pdf/white-paper/hitachi-compute-blade-500-whitepaper.pdf
+
+EVC Processor Generation Reference
+https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
+
+EP EN EX (CPU Architectures)
+https://serverfault.com/questions/414940/what-are-en-ep-and-ex-platforms
+
+vPostgres for vSphere 6
+http://www.virtually-limitless.com/vsphere-6-0/interacting-with-the-vpostgres-database-in-vsphere-6-0/
+
+PSC 6.0
+https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=2113115
+
+Subnet Cheat Sheet
+https://www.aelius.com/njh/subnet_sheet.html
+
+vSphere 6 Documentation
+https://pubs.vmware.com/vsphere-60/index.jsp
+
+Location of VMware Logs (vCenter 6.0)
+https://kb.vmware.com/selfservice/search.do?cmd=displayKC&docType=kc&docTypeID=DT_KB_1_1&externalId=2110014
+
+Location of VMware Logs (ESXi 6.0)
+http://pubs.vmware.com/vsphere-60/index.jsp?topic=%2Fcom.vmware.vsphere.monitoring.doc%2FGUID-832A2618-6B11-4A28-9672-93296DA931D0.html
+
+Location of VMware Logs (All)
+https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=1021806
+
+181 Questions and Answers
+http://www.aiotestking.com/vmware/which-three-authorization-types-are-valid-in-vsphere/
+
+Documenting VM Environment
+https://communities.vmware.com/thread/289481
+
+Intel Xeon E5-2697 v3
+http://www.cpu-world.com/CPUs/Xeon/Intel-Xeon%20E5-2697%20v3.html
+
+Intel Xeon E5-2690 v4
+http://www.cpu-world.com/CPUs/Xeon/Intel-Xeon%20E5-2690%20v4.html
+
+Processor VT, BIOS
+https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=1003944
+
+Rack Mount vs Blade
+https://www.tuangru.com/the-pros-and-cons-of-blade-servers-vs-rack-servers/
+
+Clone Best Practices
+https://kb.vmware.com/kb/1027865
+
+VM Datastore Diagram
+http://www.altaro.com/vmware/wp-content/uploads/2016/04/VMware-Storage.jpg
+
+VMware EVO
+https://blogs.vmware.com/virtualblocks/2015/10/14/vmware-evo-sddc-an-insiders-view/
+
+Understanding Quorum
+https://technet.microsoft.com/en-us/library/cc731739(v=ws.11).aspx#BKMK_choices
+
+Why Reboot?
+http://exodusdev.com/products/whyreboot
+
+Resource Pools
+http://wahlnetwork.com/2012/02/01/understanding-resource-pools-in-vmware-vsphere/
+
+Resource Pools
+http://www.settlersoman.com/vmware-vsphere-basics-understanding-resource-pools/
+
+HA Admission Control
+http://www.settlersoman.com/understanding-vmware-ha-admission-control/
+
+ESX Resource Management PDF
+https://www.vmware.com/pdf/esx_resource_mgmt.pdf
+
+vCenter Resource Management PDF
+http://pubs.vmware.com/vsphere-50/topic/com.vmware.ICbase/PDF/vsphere-esxi-vcenter-server-50-resource-management-guide.pdf
+
+Official Script Pool
+http://www.virtu-al.net/
+
+PowerShell Basic Functions
+https://blogs.technet.microsoft.com/heyscriptingguy/2014/04/28/basics-of-powershell-looping-foreach/
+
+Backup / Restore vPostgres (Vendor)	https://kb.vmware.com/selfservice/microsites/search.do?cmd=displayKC&docType=kc&externalId=2091961&sliceId=1&docTypeID=DT_KB_1_1&dialogID=477268715&stateId=1%200%20477278335
+
+VMDK Lock
+https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=2110152
+
+ESXTOP
+http://www.yellow-bricks.com/esxtop/
+
+ESXCLI
+https://pubs.vmware.com/vsphere-50/index.jsp#com.vmware.vcli.ref.doc_50/vcli-right.html
+
+Spectre & Meltdown ***
+https://kb.vmware.com/s/article/52085
+https://kb.vmware.com/s/article/52345
+https://www.vmware.com/us/security/advisories/VMSA-2018-0004.html
+https://docs.vmware.com/en/VMware-vSphere/6.5/com.vmware.vsphere.security.doc/GUID-832A2618-6B11-4A28-9672-93296DA931D0.html	https://docs.vmware.com/en/VMware-vSphere/6.5/com.vmware.vsphere.security.doc/GUID-832A2618-6B11-4A28-9672-93296DA931D0.html
+
 ____________________________________________________________________________________________________________________________________________________________________________
 
