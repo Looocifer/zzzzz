@@ -1,3 +1,10 @@
+Brocade SCSI Detailed : http://www.fujitsu.com/downloads/STRSYS/switch/FOS_CmdRef_v730.pdf
+Windows Service Stack Basics : https://superuser.com/questions/1096947/what-is-the-servicing-stack-and-how-does-it-work
+
+http://vmwarediary.com/Tips/2017/8/5799801/Vmware-Tools64-msi-missing-during-uninstallation-and-Setup-exe-c-switch-does-not-work
+https://www.weforum.org/agenda/2016/01/the-10-skills-you-need-to-thrive-in-the-fourth-industrial-revolution/
+https://www.weforum.org/agenda/2018/06/the-3-skill-sets-workers-need-to-develop-between-now-and-2030/
+
 qprocess
 net stats server/workstation (Queries Server or Workstation service from services.msc)
 sfc /scannow
@@ -349,3 +356,134 @@ Event ID :
 627 - Password Change Attempt
 628 - Password Changed by Admins
 642 - Password Updated
+
+____________________________________________________________________________________________________________________________________________________________________________
+vNUMA
+
+In general, the following best practices should be followed regarding vNUMA and Cores per Socket:
+•	Configure the VM CPU value equal to Cores per Socket, until you exceed the physical core count of a single physical NUMA node.
+
+Example: for a host with 8-core processors, any VM with 8 (or fewer) CPUs should have the same Cores Per Socket value.
+•	When you need to configure more vCPUs than there are physical cores in the NUMA node, evenly divide the vCPU count across the minimum number of NUMA nodes.
+
+Example: for a 4-socket, 8-core host, and the VM needs more than 8 vCPUs, a reasonable choice may include a 16 vCPU VM with 8 Cores per Socket (to match the 8-core processor architecture)
+•	Don’t assign an odd number of vCPUs when the size of your virtual machine exceeds a physical NUMA node.
+
+Example: for a 2-socket, 4-core host, do not create a VM with 5 or 7 vCPUs.
+•	Don’t exceed the total number of physical cores of your host.
+
+Example: for a 2-socket, 4-core host, do not create a VM with more than 8 vCPUs.
+•	Don’t enable vCPU Hot Add. (this disables virtual NUMA)
+•	"Right-size" monster VMs to be multiples of physical NUMA size.
+
+Example: on an 8 cores/node system, 8/16/24/32 vCPU; for a 10 cores/node system, 10/20/40 vCPU
+There are many Advanced Virtual NUMA Attributes (click for a full list); here are a few guidelines, but in general, the defaults are best:
+•	If the VM is larger than total physical core count (e.g. a 64 vCPU VM on a 40 core / 80 thread host), try numa.consolidate = false
+•	If Hyper-Threading is enabled (usually the default), numa.vcpu.preferHT=true may help (KB 2003582)
+•	If Cores per Socket is too restrictive, you can manually set vNUMA size with numa.vcpu.maxPerMachineNode
+•	To enable vNUMA on a VM with 8 or fewer vCPUs, use numa.vcpu.min
+____________________________________________________________________________________________________________________________________________________________________________
+Quick Query of All MS Patches Installed
+
+Open Notepad. Paste List of Hostnames/FQDNs or IPs and save the file as Input.txt under “C:\Temp\”
+## I prefer IP and as a result I have provided that only in Input file instead of Hostnames.
+
+Then start cmd (non admin works) and paste the command below (in blue). Output will come under “C:\Temp\” as QFE_Multiple.txt since that’s configured in my command.
+FOR /f %a in (C:\Temp\Input.txt) DO wmic /node:%a qfe list >> C:\Temp\QFE_Multiple.txt
+
+PFA, my Output (QFE_Multiple) & Input files for reference.
+In the output file you will find Hostnames too for each patch listed. Per line. Example/Reference below.
+
+Make sure to uncheck Word Wrap in notepad otherwise the Data will appear weird. PFB.
+ 
+Example of the command post execution. Input.txt had only two IPs so it ended after two executions. Remove all spaces from the Input File via Find & Replace.
+____________________________________________________________________________________________________________________________________________________________________________
+GPTFIX
+
+Note down the Datastore which has GPT error. 
+Migrate all VMs from the target Datastore to OK Datasore, check for space issues.
+If any server migration issue we need to take approval from Customer and shutdown the VMs. (Confirm for Proper Backup)
+After Migration, browse the Datastore and make sure no other running VM available on this DS.
+After the Datastore is Free then log in to the Esxi host throuh putty and execute the command.
+
+GPT Fix:
+partedUtil getptbl /vmfs/devices/disks/naa.ID of the Datastore
+
+partedUtil fixGpt /vmfs/devices/disks/ naa.ID of the Datastore
+
+partedUtil getptbl /vmfs/devices/disks/ naa.ID of the Datastore - Run again to check if any error occurred.
+____________________________________________________________________________________________________________________________________________________________________________
+Copying Shares via Registry
+
+Copy-ItemProperty -Path HKLM:\System\CurrentControlSet\Services\LanmanServer\Shares\Security -Destination HKLM:\System\CurrentControlSet\Services\LanmanServer\Backup -name "ShareName" 
+
+If the VM’s disk are not locked by the backup vProxy server then we need to check in the ESXi. 
+First, we need to identify in which host specific VM is hosted. Go to the VM on the right-hand side select the summary tab. 
+Go to VM edit settings check is there any disk is grayed out. 
+For example, if “Hard disk 1” is not grayed out, it is not locked. "Hard disk 2" if greyed out (Size Portion) is locked.
+
+SSH to ESXi. Browse to Datastorw where target VMDK exists.
+vmkfstools -D xx-flat.vmdk (Target FLAT) > Note Down MAC which has locked it.
+
+Step 1 > etc/init.d/vpxa restart
+If the issue is still not fixed then try restart Hostd service (etc/init.d/hostd  restart) .
+Even after restarting the VPXA,  hostd , service if we are still getting the consolidation/disk lock issue.
+Try restart Services.sh services wait for all the services to restart then try disk consolidation.
+Else isolate & reboot the ESXi.
+____________________________________________________________________________________________________________________________________________________________________________
+Pre-DR (Manual) Thorough Documentation
+
+vmware -vl
+esxcfg-nics -l
+vmkload_mod -s elxnet | grep Version
+vmkchdev -l | grep vmnic0
+esxcli network nic get -n vmnic0
+esxcfg-vswitch -l
+esxcli network vswitch standard portgroup list
+esxcfg-scsidevs -a
+vmkload_mod -s lpfc820 | grep Version
+esxcli storage vmfs extent list
+esxcli storage core device detached list
+esxcli storage core device partition list
+esxcli storage core adapter list
+esxcli storage core adapter stats get
+esxcli storage core device list
+esxcli software vib list
+esxcli storage core claimrule list
+esxcli storage core device vaai status get
+esxcli storage vmfs lockmode list
+____________________________________________________________________________________________________________________________________________________________________________
+Provide Hash Dump of the passwords from the AD server for Password Audit
+
+1.)	Login to any one of the Domain Controller
+
+2.)	Open Command prompt in Administrator mode
+
+
+3.)	Run the below command
+ntdsutil
+ntdsutil: activate instance ntds
+ntdsutil: ifm
+ifm: create full D:\AD_Hash
+ifm: quit
+ntdsutil: quit
+
+4.)	Now that you can able to see two folders created under mentioned path “D:\AD_Hash”
+a.	“D:\AD_Hash\Active Directory” (under this folder you would able to see “Ntds.dit” file)
+b.	“D:\AD_Hash\Registry” (under this foler you would able to see “Security” and “System” files)
+
+5.)	Copy “Ntds.dit” file and “System” file to a single folder.
+
+
+6.)	Extract enclosed “NtdsAudit.exe” and run the below command in command prompt.
+
+You can download it from below GitHub as well.
+https://github.com/Dionach/NtdsAudit 
+
+
+NtdsAudit.exe "ntds.dit" -s "SYSTEM" -p pwdump.txt --users-csv users.csv
+ 
+7.)	Now you should able to see “pwddump.txt” and “users.csv” files 
+8.)	Open “pwddump.txt” and copy the content to excel. Clean up the data using “Text to Columns” option and provide the report.
+____________________________________________________________________________________________________________________________________________________________________________
+
